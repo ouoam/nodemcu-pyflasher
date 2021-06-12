@@ -4,6 +4,7 @@ import wx
 import wx.lib.mixins.inspection
 
 import sys
+import os.path
 import esptool
 import threading
 import images as images
@@ -102,6 +103,28 @@ class FlashConfig:
 
 
 # ---------------------------------------------------------------------------
+class MyFileDropTarget(wx.FileDropTarget):
+    def __init__(self, window):
+        wx.FileDropTarget.__init__(self)
+        self._window = window
+
+    def OnDropFiles(self, x, y, filenames):
+        for filepath in filenames:
+            extension = os.path.splitext(filepath)[1]
+            if extension == ".bin":
+                self._window._config.firmware_path = filepath
+                self._window.file_picker.SetPath(filepath)
+                return True
+
+        msg = "Not support file extension."
+        dlg = wx.MessageDialog(None, msg, style=wx.ICON_ERROR)
+        dlg.ShowModal()
+        return False
+        
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
 class NodeMcuFlasher(wx.Frame):
 
     def __init__(self, parent, title):
@@ -114,6 +137,13 @@ class NodeMcuFlasher(wx.Frame):
 
         sys.stdout = RedirectText(self.console_ctrl)
 
+        file_drop_target = MyFileDropTarget(self)
+        self.SetDropTarget(file_drop_target)
+
+        if len(sys.argv) > 1:
+            filenames = sys.argv[1:]
+            file_drop_target.OnDropFiles(-1, -1, filenames)
+
         self.Centre(wx.BOTH)
         self.Show(True)
         print("Connect your device")
@@ -125,10 +155,11 @@ class NodeMcuFlasher(wx.Frame):
             self.choice.SetItems(self._get_serial_ports())
 
         def on_clicked(event):
-            self.console_ctrl.SetValue("")
-            self.console_ctrl.SetForegroundColour(wx.BLUE)
-            worker = FlashingThread(self, self._config)
-            worker.start()
+            if self._config.firmware_path != None:
+                self.console_ctrl.SetValue("")
+                self.console_ctrl.SetForegroundColour(wx.BLUE)
+                worker = FlashingThread(self, self._config)
+                worker.start()
 
         def on_select_port(event):
             choice = event.GetEventObject()
@@ -151,8 +182,8 @@ class NodeMcuFlasher(wx.Frame):
         reload_button.Bind(wx.EVT_BUTTON, on_reload)
         reload_button.SetToolTip("Reload serial device list")
 
-        file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_USE_TEXTCTRL)
-        file_picker.Bind(wx.EVT_FILEPICKER_CHANGED, on_pick_file)
+        self.file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_USE_TEXTCTRL, wildcard="*.bin")
+        self.file_picker.Bind(wx.EVT_FILEPICKER_CHANGED, on_pick_file)
 
         serial_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         serial_boxsizer.Add(self.choice, 1, wx.EXPAND)
@@ -174,7 +205,7 @@ class NodeMcuFlasher(wx.Frame):
 
         fgs.AddMany([
                     port_label, (serial_boxsizer, 1, wx.EXPAND),
-                    file_label, (file_picker, 1, wx.EXPAND),
+                    file_label, (self.file_picker, 1, wx.EXPAND),
                     (wx.StaticText(panel, label="")), (button, 1, wx.EXPAND),
                     (console_label, 1, wx.EXPAND), (self.console_ctrl, 1, wx.EXPAND)])
         fgs.AddGrowableRow(3, 1)
