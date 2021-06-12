@@ -138,9 +138,9 @@ class NodeMcuFlasher(wx.Frame):
 
         self.Centre(wx.BOTH)
         self.Show(True)
-        print("Connect your device")
-        print("\nIf you chose the serial port auto-select feature")
-        print("you might need to turn off Bluetooth")
+        # print("Connect your device")
+        # print("\nIf you chose the serial port auto-select feature")
+        # print("you might need to turn off Bluetooth")
 
     def _init_ui(self):
         def on_reload(event):
@@ -236,7 +236,7 @@ class NodeMcuFlasher(wx.Frame):
     def report_error(self, message, caption="Error", fromFlash=False):
         dlg = wx.MessageDialog(None, message, caption=caption, style=wx.ICON_ERROR)
         dlg.ShowModal()
-        self.console_ctrl.AppendText("\n" + message + "\n")
+        self.console_ctrl.AppendText("\n" + message.replace("\n\n", "\n") + "\n\n")
 
         if fromFlash:
             self.button.SetLabel("Try flash again")
@@ -244,20 +244,33 @@ class NodeMcuFlasher(wx.Frame):
             self.button.Enable()
 
     def set_filepath(self, filenames):
+        msg = "Some thing error."
         for filepath in filenames:
-            extension = os.path.splitext(filepath)[1]
-            if extension == ".bin":
-                self._config.firmware_path = filepath
-                self.file_picker.SetPath(filepath)
-                self.filepath_text.SetValue(filepath)
-                self.button.SetLabel("Flash ESP32")
-                self.button.SetForegroundColour(wx.Colour("FOREST GREEN"))
-                # self.button.Enable()
-                self.button.SetFocus()
-                return True
+            magic = 0x00
+            try:
+                firmware = open(filepath, 'rb')
+                magic = int.from_bytes(firmware.read(1), "big")
+                firmware.close()
+            except IOError as err:
+                msg = "Error opening binary '{}'\n\n{}".format(filepath, err)
+                break
 
-        msg = "Not support file extension."
-        self.report_error(msg)
+            if magic != esptool.ESPLoader.ESP_IMAGE_MAGIC:
+                msg = "The firmware binary is invalid\n\n"
+                msg += "magic byte={:02X}, should be {:02X}".format(magic, esptool.ESPLoader.ESP_IMAGE_MAGIC)
+                break
+
+            self._config.firmware_path = filepath
+            self.file_picker.SetPath(filepath)
+            self.filepath_text.SetValue(filepath)
+            self.button.SetLabel("Flash ESP32")
+            self.button.SetForegroundColour(wx.Colour("FOREST GREEN"))
+            # self.button.Enable()
+            self.button.SetFocus()
+            return True
+
+        r = threading.Timer(0, self.report_error, [msg])
+        r.start()
         return False
 
 # ---------------------------------------------------------------------------
