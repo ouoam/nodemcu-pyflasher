@@ -101,25 +101,12 @@ class FlashConfig:
 
 # ---------------------------------------------------------------------------
 class MyFileDropTarget(wx.FileDropTarget):
-    def __init__(self, window):
+    def __init__(self, onDrop):
         wx.FileDropTarget.__init__(self)
-        self._window = window
+        self._onDrop = onDrop
 
     def OnDropFiles(self, x, y, filenames):
-        for filepath in filenames:
-            extension = os.path.splitext(filepath)[1]
-            if extension == ".bin":
-                self._window._config.firmware_path = filepath
-                self._window.file_picker.SetPath(filepath)
-                self._window.filepath_text.SetValue(filepath)
-                self._window.button.Enable()
-                self._window.button.SetFocus()
-                return True
-
-        msg = "Not support file extension."
-        self._window.report_error(msg)
-        return False
-        
+        return self._onDrop(filenames)
 # ---------------------------------------------------------------------------
 
 
@@ -136,12 +123,12 @@ class NodeMcuFlasher(wx.Frame):
 
         sys.stdout = RedirectText(self.console_ctrl)
 
-        file_drop_target = MyFileDropTarget(self)
+        file_drop_target = MyFileDropTarget(self.set_filepath)
         self.SetDropTarget(file_drop_target)
 
         if len(sys.argv) > 1:
             filenames = sys.argv[1:]
-            file_drop_target.OnDropFiles(-1, -1, filenames)
+            self.set_filepath(filenames)
 
         self.Centre(wx.BOTH)
         self.Show(True)
@@ -165,10 +152,7 @@ class NodeMcuFlasher(wx.Frame):
 
         def on_pick_file(event):
             filepath = event.GetPath().replace("'", "")
-            self._config.firmware_path = filepath
-            self.filepath_text.SetValue(filepath)
-            self.button.Enable()
-            self.button.SetFocus()
+            self.set_filepath([filepath])
 
         panel = wx.Panel(self)
 
@@ -247,6 +231,21 @@ class NodeMcuFlasher(wx.Frame):
         dlg = wx.MessageDialog(None, message, caption=caption, style=wx.ICON_ERROR)
         dlg.ShowModal()
         self.console_ctrl.AppendText("\n" + message + "\n")
+
+    def set_filepath(self, filenames):
+        for filepath in filenames:
+            extension = os.path.splitext(filepath)[1]
+            if extension == ".bin":
+                self._config.firmware_path = filepath
+                self.file_picker.SetPath(filepath)
+                self.filepath_text.SetValue(filepath)
+                self.button.Enable()
+                self.button.SetFocus()
+                return True
+
+        msg = "Not support file extension."
+        self.report_error(msg)
+        return False
 
 # ---------------------------------------------------------------------------
 
