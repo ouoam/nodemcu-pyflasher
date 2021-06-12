@@ -111,6 +111,7 @@ class MyFileDropTarget(wx.FileDropTarget):
             if extension == ".bin":
                 self._window._config.firmware_path = filepath
                 self._window.file_picker.SetPath(filepath)
+                self._window.filepath_text.SetValue(filepath)
                 self._window.button.Enable()
                 self._window.button.SetFocus()
                 return True
@@ -163,7 +164,9 @@ class NodeMcuFlasher(wx.Frame):
             self._config.port = choice.GetString(choice.GetSelection())
 
         def on_pick_file(event):
-            self._config.firmware_path = event.GetPath().replace("'", "")
+            filepath = event.GetPath().replace("'", "")
+            self._config.firmware_path = filepath
+            self.filepath_text.SetValue(filepath)
             self.button.Enable()
             self.button.SetFocus()
 
@@ -181,13 +184,19 @@ class NodeMcuFlasher(wx.Frame):
         reload_button.Bind(wx.EVT_BUTTON, on_reload)
         reload_button.SetToolTip("Reload serial device list")
 
-        self.file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_USE_TEXTCTRL, wildcard="*.bin")
+        self.filepath_text = wx.TextCtrl(panel, style=wx.TE_READONLY)
+
+        self.file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN|wx.FLP_FILE_MUST_EXIST, wildcard="*.bin")
         self.file_picker.Bind(wx.EVT_FILEPICKER_CHANGED, on_pick_file)
         self.file_picker.SetFocus()
 
         serial_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         serial_boxsizer.Add(self.choice, 1, wx.EXPAND)
         serial_boxsizer.Add(reload_button, flag=wx.LEFT, border=5)
+
+        file_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
+        file_boxsizer.Add(self.filepath_text, 1, wx.EXPAND)
+        file_boxsizer.Add(self.file_picker, flag=wx.LEFT, border=5)
 
         font = wx.Font(15, wx.FONTFAMILY_DEFAULT, 0, 90)
         self.button = wx.Button(panel, -1, "Flash ESP32", size=wx.Size(-1, 50))
@@ -208,7 +217,7 @@ class NodeMcuFlasher(wx.Frame):
 
         fgs.AddMany([
                     port_label, (serial_boxsizer, 1, wx.EXPAND),
-                    file_label, (self.file_picker, 1, wx.EXPAND),
+                    file_label, (file_boxsizer, 1, wx.EXPAND),
                     (wx.StaticText(panel, label="")), (self.button, 1, wx.EXPAND),
                     (console_label, 1, wx.EXPAND), (self.console_ctrl, 1, wx.EXPAND)])
         fgs.AddGrowableRow(3, 1)
