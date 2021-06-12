@@ -119,8 +119,9 @@ class MyFileDropTarget(wx.FileDropTarget):
 class NodeMcuFlasher(wx.Frame):
 
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, -1, title, size=(550, 320),
+        wx.Frame.__init__(self, parent, -1, title, size=(450, 190),
                           style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        self.SetMinSize(size=(450, 190))
         self._config = FlashConfig()
 
         self._set_icons()
@@ -188,7 +189,7 @@ class NodeMcuFlasher(wx.Frame):
         file_boxsizer.Add(self.file_picker, flag=wx.LEFT, border=5)
 
         font = wx.Font(15, wx.FONTFAMILY_DEFAULT,  wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        self.button = wx.Button(panel, -1, "Drop your firmware", size=wx.Size(-1, 50))
+        self.button = wx.Button(panel, -1, "Drop your firmware", size=wx.Size(-1, 100))
         self.button.Bind(wx.EVT_BUTTON, on_clicked)
         self.button.SetFont(font)
         self.button.SetForegroundColour(wx.Colour("RED"))
@@ -205,10 +206,9 @@ class NodeMcuFlasher(wx.Frame):
         file_label = wx.StaticText(panel, label="Firmware")
         console_label = wx.StaticText(panel, label="Console")
 
-        fgs.AddMany([
-                    port_label, (serial_boxsizer, 1, wx.EXPAND),
-                    file_label, (file_boxsizer, 1, wx.EXPAND),
+        fgs.AddMany([file_label, (file_boxsizer, 1, wx.EXPAND),
                     (wx.StaticText(panel, label="")), (self.button, 1, wx.EXPAND),
+                    port_label, (serial_boxsizer, 1, wx.EXPAND),
                     (console_label, 1, wx.EXPAND), (self.console_ctrl, 1, wx.EXPAND)])
         fgs.AddGrowableRow(3, 1)
         fgs.AddGrowableCol(1, 1)
