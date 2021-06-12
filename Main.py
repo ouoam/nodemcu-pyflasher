@@ -5,6 +5,7 @@ import wx.lib.mixins.inspection
 
 import sys
 import os.path
+import sched
 import esptool
 import threading
 import images as images
@@ -55,6 +56,7 @@ class FlashingThread(threading.Thread):
         self._config = config
 
     def run(self):
+        s = sched.scheduler()
         try:
             command = []
 
@@ -75,11 +77,25 @@ class FlashingThread(threading.Thread):
 
             print("Command: esptool.py %s\n" % " ".join(command))
 
-            self._parent.button.SetLabel("Flashing...")
+            self._parent.button.SetLabel("Flashing ")
             self._parent.button.SetForegroundColour(wx.NullColour)
             self._parent.button.Disable()
 
+            
+            def change_label():
+                s.enter(0.5, 1, change_label) # like setinterval
+                label = self._parent.button.GetLabel()
+                if label.count(".") >= 4:
+                    label = label.replace(".", "")
+                self._parent.button.SetLabel(label + ".")
+            s.enter(0, 1, change_label)
+            r = threading.Timer(0, s.run) # run in new thread
+            r.start()
+
             esptool.main(command)
+
+            # cancle all in queue
+            list(map(s.cancel, s.queue))
 
             self._parent.button.SetLabel("Flash again")
             self._parent.button.Enable()
@@ -88,6 +104,7 @@ class FlashingThread(threading.Thread):
             dlg = wx.MessageDialog(None, msg)
             dlg.ShowModal()
         except Exception as e:
+            list(map(s.cancel, s.queue))
             self._parent.report_error(str(e), caption="Flash failed.", fromFlash=True)
 
 
@@ -176,7 +193,7 @@ class NodeMcuFlasher(wx.Frame):
 
         self.filepath_text = wx.TextCtrl(panel, style=wx.TE_READONLY)
 
-        self.file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN|wx.FLP_FILE_MUST_EXIST, wildcard="*.bin")
+        self.file_picker = wx.FilePickerCtrl(panel, style=wx.FLP_OPEN|wx.FLP_FILE_MUST_EXIST)
         self.file_picker.Bind(wx.EVT_FILEPICKER_CHANGED, on_pick_file)
         self.file_picker.SetFocus()
 
