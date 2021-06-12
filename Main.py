@@ -143,8 +143,8 @@ class NodeMcuFlasher(wx.Frame):
         self.Centre(wx.BOTH)
         self.Show(True)
         print("Connect your device")
-        print("\nIf you chose the serial port auto-select feature you might need to ")
-        print("turn off Bluetooth")
+        print("\nIf you chose the serial port auto-select feature")
+        print("you might need to turn off Bluetooth")
 
     def _init_ui(self):
         def on_reload(event):
@@ -182,10 +182,12 @@ class NodeMcuFlasher(wx.Frame):
 
         serial_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
         serial_boxsizer.Add(self.choice, 1, wx.EXPAND)
-        serial_boxsizer.Add(reload_button, flag=wx.LEFT, border=10)
+        serial_boxsizer.Add(reload_button, flag=wx.LEFT, border=5)
 
-        button = wx.Button(panel, -1, "Flash ESP32")
+        font = wx.Font(15, wx.FONTFAMILY_DEFAULT, 0, 90)
+        button = wx.Button(panel, -1, "Flash ESP32", size=wx.Size(-1, 50))
         button.Bind(wx.EVT_BUTTON, on_clicked)
+        button.SetFont(font)
 
         self.console_ctrl = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
         self.console_ctrl.SetFont(wx.Font((0, 13), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL,
@@ -195,7 +197,7 @@ class NodeMcuFlasher(wx.Frame):
         self.console_ctrl.SetDefaultStyle(wx.TextAttr(wx.BLUE))
 
         port_label = wx.StaticText(panel, label="Serial port")
-        file_label = wx.StaticText(panel, label="ESP32 firmware")
+        file_label = wx.StaticText(panel, label="Firmware")
         console_label = wx.StaticText(panel, label="Console")
 
         fgs.AddMany([
