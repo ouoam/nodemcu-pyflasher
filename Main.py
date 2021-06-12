@@ -77,16 +77,13 @@ class FlashingThread(threading.Thread):
 
             esptool.main(command)
 
-            # The last line printed by esptool is "Staying in bootloader." -> some indication that the process is
-            # done is needed
-            print("\nFirmware successfully flashed. Unplug/replug or reset device \nto switch back to normal boot "
-                  "mode.")
+            msg = "Firmware successfully flashed."
+            dlg = wx.MessageDialog(None, msg)
+            dlg.ShowModal()
         except SerialException as e:
-            self._parent.report_error(str(e))
-            raise e
+            self._parent.report_error(str(e), caption="Flash failed.")
         except esptool.FatalError as e:
-            self._parent.report_error(str(e))
-            raise e
+            self._parent.report_error(str(e), caption="Flash failed.")
 
 
 # ---------------------------------------------------------------------------
@@ -117,8 +114,7 @@ class MyFileDropTarget(wx.FileDropTarget):
                 return True
 
         msg = "Not support file extension."
-        dlg = wx.MessageDialog(None, msg, style=wx.ICON_ERROR)
-        dlg.ShowModal()
+        self._window.report_error(msg)
         return False
         
 # ---------------------------------------------------------------------------
@@ -157,7 +153,6 @@ class NodeMcuFlasher(wx.Frame):
         def on_clicked(event):
             if self._config.firmware_path != None:
                 self.console_ctrl.SetValue("")
-                self.console_ctrl.SetForegroundColour(wx.BLUE)
                 worker = FlashingThread(self, self._config)
                 worker.start()
 
@@ -231,12 +226,10 @@ class NodeMcuFlasher(wx.Frame):
     def _set_icons(self):
         self.SetIcon(images.Icon.GetIcon())
 
-    def report_error(self, message):
-        self.console_ctrl.SetForegroundColour(wx.RED)
-        self.console_ctrl.SetValue(message)
-
-    def log_message(self, message):
-        self.console_ctrl.AppendText(message)
+    def report_error(self, message, caption="Error"):
+        dlg = wx.MessageDialog(None, message, caption=caption, style=wx.ICON_ERROR)
+        dlg.ShowModal()
+        self.console_ctrl.AppendText("\n" + message + "\n")
 
 # ---------------------------------------------------------------------------
 
