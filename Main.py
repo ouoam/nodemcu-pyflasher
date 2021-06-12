@@ -75,15 +75,20 @@ class FlashingThread(threading.Thread):
 
             print("Command: esptool.py %s\n" % " ".join(command))
 
+            self._parent.button.SetLabel("Flashing...")
+            self._parent.button.SetForegroundColour(wx.NullColour)
+            self._parent.button.Disable()
+
             esptool.main(command)
+
+            self._parent.button.SetLabel("Flash again")
+            self._parent.button.Enable()
 
             msg = "Firmware successfully flashed."
             dlg = wx.MessageDialog(None, msg)
             dlg.ShowModal()
-        except SerialException as e:
-            self._parent.report_error(str(e), caption="Flash failed.")
-        except esptool.FatalError as e:
-            self._parent.report_error(str(e), caption="Flash failed.")
+        except Exception as e:
+            self._parent.report_error(str(e), caption="Flash failed.", fromFlash=True)
 
 
 # ---------------------------------------------------------------------------
@@ -114,7 +119,7 @@ class MyFileDropTarget(wx.FileDropTarget):
 class NodeMcuFlasher(wx.Frame):
 
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, -1, title, size=(700, 300),
+        wx.Frame.__init__(self, parent, -1, title, size=(550, 320),
                           style=wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         self._config = FlashConfig()
 
@@ -182,11 +187,12 @@ class NodeMcuFlasher(wx.Frame):
         file_boxsizer.Add(self.filepath_text, 1, wx.EXPAND)
         file_boxsizer.Add(self.file_picker, flag=wx.LEFT, border=5)
 
-        font = wx.Font(15, wx.FONTFAMILY_DEFAULT, 0, 90)
-        self.button = wx.Button(panel, -1, "Flash ESP32", size=wx.Size(-1, 50))
+        font = wx.Font(15, wx.FONTFAMILY_DEFAULT,  wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.button = wx.Button(panel, -1, "Drop your firmware", size=wx.Size(-1, 50))
         self.button.Bind(wx.EVT_BUTTON, on_clicked)
         self.button.SetFont(font)
-        self.button.Disable()
+        self.button.SetForegroundColour(wx.Colour("RED"))
+        # self.button.Disable()
 
         self.console_ctrl = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.HSCROLL)
         self.console_ctrl.SetFont(wx.Font((0, 13), wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL,
@@ -227,10 +233,15 @@ class NodeMcuFlasher(wx.Frame):
     def _set_icons(self):
         self.SetIcon(images.Icon.GetIcon())
 
-    def report_error(self, message, caption="Error"):
+    def report_error(self, message, caption="Error", fromFlash=False):
         dlg = wx.MessageDialog(None, message, caption=caption, style=wx.ICON_ERROR)
         dlg.ShowModal()
         self.console_ctrl.AppendText("\n" + message + "\n")
+
+        if fromFlash:
+            self.button.SetLabel("Try flash again")
+            self.button.SetForegroundColour(wx.Colour("FOREST GREEN"))
+            self.button.Enable()
 
     def set_filepath(self, filenames):
         for filepath in filenames:
@@ -239,7 +250,9 @@ class NodeMcuFlasher(wx.Frame):
                 self._config.firmware_path = filepath
                 self.file_picker.SetPath(filepath)
                 self.filepath_text.SetValue(filepath)
-                self.button.Enable()
+                self.button.SetLabel("Flash ESP32")
+                self.button.SetForegroundColour(wx.Colour("FOREST GREEN"))
+                # self.button.Enable()
                 self.button.SetFocus()
                 return True
 
