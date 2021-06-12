@@ -60,7 +60,7 @@ class FlashingThread(threading.Thread):
 
             if not self._config.port.startswith(__auto_select__):
                 command.append("--port")
-                command.append(self._config.port)
+                command.append(self._config.port.split(" - ")[0])
 
             command.extend(["--chip", "esp32",
                             "--baud", "921600",
@@ -221,7 +221,7 @@ class NodeMcuFlasher(wx.Frame):
     def _get_serial_ports():
         ports = [__auto_select__ + " " + __auto_select_explanation__]
         for port, desc, hwid in sorted(list_ports.comports()):
-            ports.append(port)
+            ports.append(port + " - " + desc)
         return ports
 
     def _set_icons(self):
