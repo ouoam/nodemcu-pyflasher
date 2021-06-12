@@ -62,18 +62,15 @@ class FlashingThread(threading.Thread):
                 command.append(self._config.port)
 
             command.extend(["--chip", "esp32",
-                            "--baud", str(self._config.baud),
+                            "--baud", "921600",
                             "--before", "default_reset",
                             "--after", "hard_reset",
                             "write_flash",
-                            # https://github.com/espressif/esptool/issues/599
-                            "--flash_size", "detect",
-                            "--flash_mode", self._config.mode,
-                            "--flash_freq", "80m",
-                            "0x10000", self._config.firmware_path])
-
-            if self._config.erase_before_flash:
-                command.append("--erase-all")
+                                # https://github.com/espressif/esptool/issues/599
+                                "--flash_freq", "80m",
+                                "--flash_mode", "dio",
+                                "--flash_size", "detect",
+                                "0x10000", self._config.firmware_path])
 
             print("Command: esptool.py %s\n" % " ".join(command))
 
@@ -98,9 +95,6 @@ class FlashingThread(threading.Thread):
 # DTO between GUI and flashing thread
 class FlashConfig:
     def __init__(self):
-        self.baud = 921600
-        self.erase_before_flash = False
-        self.mode = "dio"
         self.firmware_path = None
         self.port = __auto_select__ + " " + __auto_select_explanation__
 
