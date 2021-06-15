@@ -4,7 +4,7 @@ block_cipher = None
 
 a = Analysis(['nodemcu-pyflasher.py'],
              binaries=None,
-             datas=[("images", "images")],
+             # datas=[("images", "images")],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

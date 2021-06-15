@@ -1,9 +1,9 @@
 # https://github.com/DudeNr33/pyinstaller-versionfile
 # create-version-file windows-metadata.yaml --outfile windows-version-info.txt
 Version: 5.0.0
-CompanyName: Marcel Stör
-FileDescription: NodeMCU PyFlasher
-InternalName: NodeMCU PyFlasher
-LegalCopyright: © Marcel Stör. All rights reserved.
-OriginalFilename: NodeMCU-PyFlasher.exe
-ProductName: NodeMCU PyFlasher
+CompanyName: Deaware System Co.,ltd
+FileDescription: TMD Flasher (fork from NodeMCU PyFlasher)
+InternalName: TMD Flasher
+LegalCopyright: © Deaware System Co.,ltd. All rights reserved.
+OriginalFilename: TMD Flasher.exe
+ProductName: TMD Flasher

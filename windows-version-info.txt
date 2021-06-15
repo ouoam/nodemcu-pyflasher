@@ -1,5 +1,3 @@
-# GENERATED FILE. DO NOT EDIT. Created by running create-version-file windows-metadata.yaml --outfile windows-version-info.txt
-#
 # UTF-8
 #
 # For more details about fixed file info 'ffi' see:
@@ -32,13 +30,13 @@ VSVersionInfo(
       [
       StringTable(
         u'040904B0',
-        [StringStruct(u'CompanyName', u'Marcel Stör'),
-        StringStruct(u'FileDescription', u'NodeMCU PyFlasher'),
+        [StringStruct(u'CompanyName', u'Deaware System Co.,ltd'),
+        StringStruct(u'FileDescription', u'TMD Flasher (fork from NodeMCU PyFlasher)'),
         StringStruct(u'FileVersion', u'5.0.0.0'),
-        StringStruct(u'InternalName', u'NodeMCU PyFlasher'),
-        StringStruct(u'LegalCopyright', u'© Marcel Stör. All rights reserved.'),
-        StringStruct(u'OriginalFilename', u'NodeMCU-PyFlasher.exe'),
-        StringStruct(u'ProductName', u'NodeMCU PyFlasher'),
+        StringStruct(u'InternalName', u'TMD Flasher'),
+        StringStruct(u'LegalCopyright', u'© Deaware System Co.,ltd. All rights reserved.'),
+        StringStruct(u'OriginalFilename', u'TMD Flasher.exe'),
+        StringStruct(u'ProductName', u'TMD Flasher'),
         StringStruct(u'ProductVersion', u'5.0.0.0')])
       ]), 
     VarFileInfo([VarStruct(u'Translation', [1033, 1200])])

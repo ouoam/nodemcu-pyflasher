@@ -105,7 +105,7 @@ class FlashingThread(threading.Thread):
             dlg.ShowModal()
         except Exception as e:
             list(map(s.cancel, s.queue))
-            self._parent.report_error(str(e), caption="Flash failed.", fromFlash=True)
+            self._parent.report_error(str(e), caption="Flash failed", fromFlash=True)
 
 
 # ---------------------------------------------------------------------------
@@ -296,9 +296,9 @@ class NodeMcuFlasher(wx.Frame):
 class App(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def OnInit(self):
         wx.SystemOptions.SetOption("mac.window-plain-transition", 1)
-        self.SetAppName("ESP32 PyFlasher")
+        self.SetAppName("TMD Flasher (fork from NodeMCU PyFlasher)")
 
-        frame = NodeMcuFlasher(None, "ESP32 PyFlasher")
+        frame = NodeMcuFlasher(None, "TMD Flasher (fork from NodeMCU PyFlasher)")
         frame.Show()
 
         return True

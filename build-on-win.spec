@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(['nodemcu-pyflasher.py'],
-             binaries=[],
+             binaries=[( 'C:\\Program Files (x86)\\Windows Kits\\10\\Redist\\10.0.19041.0\\ucrt\\DLLs\\x86', '.' )],
              # datas=[("images", "images")],
              hiddenimports=[],
              hookspath=[],
@@ -19,7 +19,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='NodeMCU-PyFlasher',
+          name='TMD Flasher',
           version='windows-version-info.txt',
           debug=False,
           strip=False,
